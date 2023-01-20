@@ -2,83 +2,14 @@
 # valuing dev time efficiency over computational efficiency here.
 
 import json
-from sqlalchemy import (
-    Boolean,
-    Column,
-    DateTime,
-    ForeignKey,
-    Integer,
-    MetaData,
-    Numeric,
-    String,
-    Table,
-    Identity,
-    create_engine,
-)
+import api_app.models
+from api_app.models import get_metadata, Talents, Clients, Skills, Bookings, RequiredSkills, OptionalSkills
 from datetime import datetime
-
-metadata = MetaData()
-
-Talents = Table(
-    "talents",
-    metadata,
-    Column("talentId", String(), primary_key=True),
-    Column("talentName", String(), nullable=False),
-    Column("talentGrade", String(), nullable=False),
-)
-
-
-Clients = Table(
-    "clients",
-    metadata,
-    Column("clientId", String(), primary_key=True),
-    Column("clientName", String),
-    Column("industry", String),
-)
-
-Skills = Table(
-    "skills",
-    metadata,
-    Column("name", String(),  primary_key=True),
-    Column("category", String()),
-)
-
-Bookings = Table(
-    "bookings",
-    metadata,
-    Column("id", Integer, primary_key=True),
-    Column("originalId", String(), nullable=False, unique=True),
-    Column("bookingGrade", String()),
-    Column("operatingUnit", String()),
-    Column("officeCity", String()),
-    Column("officePostalCode", String, nullable=False),
-    Column("totalHours", Numeric, nullable=False),
-    Column("startDate", DateTime, nullable=False),
-    Column("endDate", DateTime, nullable=False),
-    Column("isUnassigned", Boolean),
-    Column("clientId", String(), ForeignKey("clients.clientId")),
-    Column("talentId", String(), ForeignKey("talents.talentId")),
-    Column("jobManagerId", String(), ForeignKey("talents.talentId")),
-)
-
-RequiredSkills = Table(
-    "requiredSkills",
-    metadata,
-    Column("id", Integer, primary_key=True),
-    Column("skillName",  String(), ForeignKey("skills.name")),
-    Column("bookingId", Integer, ForeignKey("bookings.id")),
-)
-
-
-OptionalSkills = Table(
-    "optionalSkills",
-    metadata,
-    Column("id", Integer, primary_key=True),
-    Column("skillName", String(), ForeignKey("skills.name")),
-    Column("bookingId", Integer, ForeignKey("bookings.id")),
-)
+from sqlalchemy import create_engine
 
 engine = create_engine("sqlite:///bookings.db")
+metadata = get_metadata()
+
 metadata.create_all(engine)
 
 
@@ -90,9 +21,8 @@ def get_talents(data):
         if val["talentId"] != "":
             if val["talentId"] not in consumed:
                 consumed.add(val["talentId"])
-                retval.append(
-                    dict((k, val[k]) for k in ("talentId", "talentName", "talentGrade"))
-                )
+                entries = dict((k, val[k]) for k in ("talentId", "talentName", "talentGrade"))
+                retval.append(entries)
     return retval
 
 
@@ -103,9 +33,8 @@ def get_clients(data):
     for val in data:
         if (val["clientId"] != "") and (val["clientId"] not in consumed):
             consumed.add(val["clientId"])
-            retval.append(
-                dict((k, val[k]) for k in ("clientId", "clientName", "industry"))
-            )
+            entries = dict((k, val[k]) for k in ("clientId", "clientName", "industry"))
+            retval.append(entries)
     return retval
 
 

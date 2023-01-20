@@ -6,6 +6,31 @@ superpower. Join forces with us and build a dashboard of the future!
 
 ![aspaara superhero](aspaara_superhero.png)
 
+## Dear reviewer
+
+As I mentioned in my cover letter, and is probably apparent from my CV, my tech stack is pretty different from what you guys do, and what this coding challenge involved.  It was a useful exersize for me, so I thank you for your time.
+
+I didn't get done... I reserved all day to work on it today, and spent some time earlier in the week reading through some tutorials and documentation on SQLAlchemy and FastAPI, but I couldn't learn the tools fast enough to get finished in one day.  I do appreciate being given a preferred tech stack, and it was really fun to learn about the tools.
+
+This submission represents my "learning by doing" efforts today.  Most of my DB experience is pretty far back in the rear-view mirror, so some of the questions, doubts and decisions I made might be a bit naive.  I wanted to do an initial commit today to meet the deadline, but if my family obligations let me I might continue to work on it over the weekend.  Should I do so, I'll leave it to you whether you want to consider the later additions.
+
+Regarding the selection criteria, I can only ask that you consider this as an indication of how quickly (or not) I can learn the necessary tech stack.  I do of course have other skills & expertise I bring to the table.
+
+In case you find yourself asking wtf in places, here are a few bullet points that might clarify my thought process:
+
+   * Based on the fact that all client id's in sample data had the same industry, I put the industry in the client table.  In practice I'd look into that more before going ahead -- some clients might be active in multiple industries, and I'd want to know how best to handle that.
+   * Similar with officeCity and officePostalCode.  I guess that's where the engagement takes place and so kept it in the bookings table.
+   * I didn't bother specifying any indexes, as I didn't have any real insight into how the data will be used.
+   * For hopefully obvious reasons I'd normally use an integer for a primary key for clientId and talentId.  I used a string  since that's is what the data model specified.   Given that the actual id is just a prefix plus an integer, I suspect I missed an obvious implication.  I was deeply tempted to strip the prefix and store the table entries with an integer id.  Instead I assumed there was a reason for doing it as specified.
+
+### Implementation notes
+   * Before running the api, run the script "initialize_db.py" to create tables and populate the db.
+#### Dependancies
+	* sqlalchemy 1.4.46
+	* databases[sqlite] (Encode databases library)
+    * sqlite 3.36.0
+
+   What little works was tested using "unicorn api:app" within "api_app" directory.
 ## Goal
 
 Create a simple backend application that provides an API for a dashboard which
