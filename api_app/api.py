@@ -18,17 +18,6 @@ def get_db():
     finally:
         db.close()
 
-
-# @app.on_event("startup")
-# async def startup():
-#     await get_db().connect()
-
-
-# @app.on_event("shutdown")
-# async def shutdown():
-#     await get_db().disconnect()
-
-
 async def pagination(
     offset: int = Query(0, ge=0),
     limit: int = Query(50, ge=0),
@@ -37,17 +26,25 @@ async def pagination(
     return (offset, capped_limit)
 
 
+
 @app.get("/bookings", response_model=list[schemas.BookingBase])
 async def list_bookings(
     pagination: Tuple[int, int] = Depends(pagination), db: Session = Depends(get_db)
 ):
+    # I'm sure this is awful, but I couldn't figure out how structure the relationships & schemas
+    # to get this out of a single query
     offset, limit = pagination
-    return crud.get_bookings(db, offset, limit)
-
+    bookings = crud.get_bookings(db, offset, limit)
+    for  booking in bookings:
+        booking.requiredSkills = crud.get_required_skills(db, booking.id)
+        booking.optionalSkills = crud.get_optional_skills(db, booking.id)
+    return bookings
 
 @app.get("/bookings/{id}", response_model=schemas.BookingBase)
 async def single_booking(id: int, db: Session = Depends(get_db)):
     bkg = crud.get_booking(db, id)
+    bkg.requiredSkills = crud.get_required_skills(db, id)
+    bkg.optionalSkills = crud.get_optional_skills(db, id)
     if bkg is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
     return bkg

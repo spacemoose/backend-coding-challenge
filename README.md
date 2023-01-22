@@ -14,7 +14,9 @@ I didn't get done... I reserved all day to work on it today, and spent some time
 
 This submission represents my "learning by doing" efforts today.  Most of my DB experience is pretty far back in the rear-view mirror, so some of the questions, doubts and decisions I made might be a bit naive.  I wanted to do an initial commit today to meet the deadline, but if my family obligations let me I might continue to work on it over the weekend.  Should I do so, I'll leave it to you whether you want to consider the later additions.
 
-Regarding the selection criteria, I can only ask that you consider this as an indication of how quickly (or not) I can learn the necessary tech stack.  I do of course have other skills & expertise I bring to the table.
+Update:  I found a couple hours this weekend and got more of it working, although I think is probably a terrible hack, necessitated by the fact that I couldn't get the desired output using relationships on the required & optional skills association tables.  Checkout the git commit from Friday if you want to be strict on the deadline.
+
+Regarding your evaluation of my skills:  I can only ask that you consider this as an indication of how quickly (or not) I can learn the necessary tech stack.  I do of course have other skills & expertise I bring to the table.
 
 In case you find yourself asking wtf in places, here are a few bullet points that might clarify my thought process:
 

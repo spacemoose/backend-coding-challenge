@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from datetime import datetime
 from typing import Optional
+from typing import Any
 
 class TalentBase(BaseModel):
     talentId: Optional[str] = None
@@ -18,12 +19,12 @@ class ClientBase(BaseModel):
     class Config:
         orm_mode=True
 
-class ClientCreate(ClientBase):
-    pass
-
 class SkillBase(BaseModel):
     name: str
     category: str
+
+    class Config:
+        orm_model=True
 
 class BookingBase(BaseModel):
     id: int
@@ -37,17 +38,13 @@ class BookingBase(BaseModel):
     endDate: datetime
     isUnassigned: bool
     clientId: Optional[str] = None
- #   talentId: Optional[str] = None
+    talentId: Optional[str] = None
     jobManagerId: Optional[str] = None
     client: ClientBase
+    talent:     Optional[TalentBase] = None
     jobManager: Optional[TalentBase] = None
-#    talent: Optional[TalentBase] = None
-    # optionalSkills: Optional[list[SkillBase]] = None
-    # requiredSkills: Optional[list] = None
+    optionalSkills: Optional[list[Any]] = None
+    requiredSkills: Optional[list[Any]] = None
 
     class Config:
         orm_mode=True
-
-class BookingCreate(BookingBase):
-    pass
-# do i need pydantic models for requiredskills & optionalskills?

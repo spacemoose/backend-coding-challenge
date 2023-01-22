@@ -3,7 +3,7 @@
 
 import json
 from api_app.models import Base, Talent, Client, Booking, Skill
-from api_app.models import RequiredSkill, OptionalSkill
+from api_app.models import RequiredSkills, OptionalSkills
 from datetime import datetime
 from sqlalchemy import create_engine, MetaData
 from sqlalchemy.orm import sessionmaker
@@ -24,6 +24,14 @@ def get_talents(data):
             if val["talentId"] not in consumed:
                 consumed.add(val["talentId"])
                 entries = dict((k, val[k]) for k in ("talentId", "talentName", "talentGrade"))
+                retval.append(entries)
+    # Because the info is more complete in the talent entries, I run through the list twice and populate missing managers
+    # I'm making the assumption that only senior manager's get assigned as JobManager's but in practice I'd check.
+    for val in data:
+        if val["jobManagerId"] != "":
+            if val["jobManagerId"] not in consumed:
+                consumed.add(val["jobManagerId"])
+                entries = {"talentId": val["jobManagerId"], "talentName": val["jobManagerName"], "talentGrade": "Senior Manager"}
                 retval.append(entries)
     return retval
 
@@ -115,12 +123,12 @@ session.bulk_save_objects(skills)
 
 requiredSkills = []
 for rs in get_skills_join("requiredSkills", data):
-    requiredSkills.append(RequiredSkill(**rs))
+    requiredSkills.append(RequiredSkills(**rs))
 session.bulk_save_objects(requiredSkills)
 
 optionalSkills = [ ]
 for os in get_skills_join("optionalSkills", data):
-    optionalSkills.append(OptionalSkill(**os))
+    optionalSkills.append(OptionalSkills(**os))
 session.bulk_save_objects(optionalSkills)
 
 

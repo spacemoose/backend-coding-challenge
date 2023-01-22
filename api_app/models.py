@@ -39,6 +39,33 @@ class Client(Base):
         )
 
 
+# RequiredSkills = Table(
+#     "requiredSkills",
+#     Base.metadata,
+#     Column("bookingId", ForeignKey("booking.id")),
+#     Column("skillName", ForeignKey("skill.name")),
+# )
+
+
+# OptionalSkills = Table(
+#     "optionalSkills",
+#     Base.metadata,
+#     Column("bookingId", ForeignKey("booking.id")),
+#     Column("skillName", ForeignKey("skill.name")),
+# )
+
+class RequiredSkills(Base):
+    __tablename__ = "requiredSkills",
+    bookingId = Column(ForeignKey("booking.id"), primary_key = True)
+    skillName = Column(ForeignKey("skill.name"), primary_key = True)
+    skill = relationship("Skill")
+
+class OptionalSkills(Base):
+    __tablename__ = "optionalSkills",
+    bookingId = Column(ForeignKey("booking.id"), primary_key = True)
+    skillName = Column(ForeignKey("skill.name"), primary_key = True)
+    skill = relationship("Skill")
+
 class Booking(Base):
     __tablename__ = "booking"
 
@@ -53,13 +80,11 @@ class Booking(Base):
     endDate = Column(DateTime, nullable=False)
     isUnassigned = Column(Boolean, nullable=False)
     clientId = Column(String(), ForeignKey("client.clientId"))
-    talentId = Column(String(), ForeignKey("talent.talentId"))
+    talentId = Column(String(),     ForeignKey("talent.talentId"))
     jobManagerId = Column(String(), ForeignKey("talent.talentId"))
     client = relationship("Client")
-
     jobManager = relationship("Talent", foreign_keys=[jobManagerId])
     talent =     relationship("Talent", foreign_keys=[talentId])
-
 
     def __repr__(self):
         return f"""Bookings(id={self.id}, originalId={self.originalId}, bookingGrade={self.bookingGrade},
@@ -70,32 +95,12 @@ class Booking(Base):
         )
 
 
-class RequiredSkill(Base):
-    __tablename__ = "requiredSkills"
-    id = Column(Integer, primary_key=True)
-    bookingId = Column(Integer, ForeignKey("booking.id"))
-    skillName = Column(String, ForeignKey("skill.name"))
-
-    def __repr__(self):
-        return f"bookingId={self.bookingId}, skillName={self.bookingId}, skill={self.skill}.format(self=self)"
-
-
-class OptionalSkill(Base):
-    __tablename__ = "optionalSkills"
-    id = Column(Integer, primary_key=True)
-    bookingId = Column(Integer, ForeignKey("booking.id"))
-    skillName = Column(String, ForeignKey("skill.name"))
-    skill = relationship("Skill")
-
 
 class Skill(Base):
     __tablename__ = "skill"
 
     name = Column(String, primary_key=True)
     category = Column(String)
-
-    #   requiredSkills = relationship(Booking, secondary=RequiredSkill, back_populates="requiredSkills")
-    #   optionalSkills = relationship(Booking, secondary=OptionalSkill, back_populates="optionalSkills")
 
     def __repr__(self):
         return f"Skill(name={self.name}, category = {self.category})".format(self=self)
