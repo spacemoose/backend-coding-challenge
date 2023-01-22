@@ -1,21 +1,32 @@
 from typing import List, Tuple
-from database import get_database, engine
-from fastapi import Depends, FastAPI, HTTPException, Query, status
+from database import engine, SessionLocal
+from fastapi import Depends, FastAPI, Query, HTTPException, status
 from databases import Database
-from schemas import Booking
-from models import Bookings, Clients
+import schemas
+from models import Booking, Client
+from sqlalchemy.orm import Session
+import crud
+
 
 app = FastAPI()
 
 
-@app.on_event("startup")
-async def startup():
-    await get_database().connect()
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 
-@app.on_event("shutdown")
-async def shutdown():
-    await get_database().disconnect()
+# @app.on_event("startup")
+# async def startup():
+#     await get_db().connect()
+
+
+# @app.on_event("shutdown")
+# async def shutdown():
+#     await get_db().disconnect()
 
 
 async def pagination(
@@ -26,34 +37,17 @@ async def pagination(
     return (offset, capped_limit)
 
 
-async def get_booking_or_404(
-    id: int, database: Database = Depends(get_database)
-) -> Booking:
-    select_query = Bookings.select().where(Bookings.c.id == id)
-    booking_data = await database.fetch_one(select_query)
-    if booking_data is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
-    joined = dict(**booking_data)
-    client_select = Clients.select().where(Clients.c.clientId == booking_data["clientId"])
-    client_data = await database.fetch_one(client_select)
-    joined.update(**client_data)
-    return Booking(**joined)
-
-
-
-
-@app.get("/bookings")
+@app.get("/bookings", response_model=list[schemas.BookingBase])
 async def list_bookings(
-    pagination: Tuple[int, int] = Depends(pagination),
-    database: Database = Depends(get_database),
-) -> List[Booking]:
+    pagination: Tuple[int, int] = Depends(pagination), db: Session = Depends(get_db)
+):
     offset, limit = pagination
-    select_query = Bookings.select().offset(offset).limit(limit)
-    rows = await database.fetch_all(select_query)
-    results = [Booking(**row) for row in rows]
-    return results
+    return crud.get_bookings(db, offset, limit)
 
 
-@app.get("/bookings/{id}", response_model=Booking)
-async def get_booking(bkg: Booking = Depends(get_booking_or_404)) -> Booking:
+@app.get("/bookings/{id}", response_model=schemas.BookingBase)
+async def single_booking(id: int, db: Session = Depends(get_db)):
+    bkg = crud.get_booking(db, id)
+    if bkg is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
     return bkg

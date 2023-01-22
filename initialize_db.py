@@ -2,15 +2,17 @@
 # valuing dev time efficiency over computational efficiency here.
 
 import json
-import api_app.models
-from api_app.models import get_metadata, Talents, Clients, Skills, Bookings, RequiredSkills, OptionalSkills
+from api_app.models import Base, Talent, Client, Booking, Skill
+from api_app.models import RequiredSkill, OptionalSkill
 from datetime import datetime
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, MetaData
+from sqlalchemy.orm import sessionmaker
 
 engine = create_engine("sqlite:///bookings.db")
-metadata = get_metadata()
+Session = sessionmaker(bind=engine)
+session = Session()
 
-metadata.create_all(engine)
+Base.metadata.create_all(engine)
 
 
 def get_talents(data):
@@ -86,24 +88,40 @@ def get_skills_join(fieldname, data):
             retval.append({"skillName": skill["name"], "bookingId": val["id"]})
     return retval
 
+
 infile = open("planning.json")
 data = json.load(infile)
 connection = engine.connect()
 
-ins = Talents.insert()
-result = connection.execute(ins, get_talents(data))
+bookings = []
+for b in get_bookings(data):
+    bookings.append(Booking(**b))
+session.bulk_save_objects(bookings)
 
-ins = Clients.insert()
-result = connection.execute(ins, get_clients(data))
+talents = []
+for t in get_talents(data):
+    talents.append(Talent(**t))
+session.bulk_save_objects(talents)
 
-ins = Skills.insert()
-result = connection.execute(ins, get_skills(data))
+clients = []
+for c in get_clients(data):
+    clients.append(Client(**c))
+session.bulk_save_objects(clients)
 
-ins = Bookings.insert()
-result = connection.execute(ins, get_bookings(data))
+skills = []
+for s in get_skills(data):
+    skills.append(Skill(**s))
+session.bulk_save_objects(skills)
 
-ins = RequiredSkills.insert()
-result = connection.execute(ins, get_skills_join("requiredSkills", data))
+requiredSkills = []
+for rs in get_skills_join("requiredSkills", data):
+    requiredSkills.append(RequiredSkill(**rs))
+session.bulk_save_objects(requiredSkills)
 
-ins = OptionalSkills.insert()
-result = connection.execute(ins, get_skills_join("optionalSkills", data))
+optionalSkills = [ ]
+for os in get_skills_join("optionalSkills", data):
+    optionalSkills.append(OptionalSkill(**os))
+session.bulk_save_objects(optionalSkills)
+
+
+session.commit()

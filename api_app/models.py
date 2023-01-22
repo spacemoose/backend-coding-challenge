@@ -1,78 +1,101 @@
 from sqlalchemy import (
     Boolean,
     Column,
-    DateTime,
     ForeignKey,
     Integer,
-    MetaData,
-    Numeric,
     String,
+    Numeric,
+    DateTime,
     Table,
-    Identity,
-    create_engine,
 )
-from datetime import datetime
+from sqlalchemy.orm import relationship, declarative_base, backref
 
-metadata = MetaData()
-
-def get_metadata():
-    return metadata
-
-Talents = Table(
-    "talents",
-    metadata,
-    Column("talentId", String(), primary_key=True),
-    Column("talentName", String(), nullable=False),
-    Column("talentGrade", String(), nullable=False),
-)
+Base = declarative_base()
 
 
-Clients = Table(
-    "clients",
-    metadata,
-    Column("clientId", String(), primary_key=True),
-    Column("clientName", String),
-    Column("industry", String),
-)
+class Talent(Base):
+    __tablename__ = "talent"
 
-Skills = Table(
-    "skills",
-    metadata,
-    Column("name", String(),  primary_key=True),
-    Column("category", String()),
-)
+    talentId = Column(String, primary_key=True, index=True)
+    talentName = Column(String)
+    talentGrade = Column(String)
 
-Bookings = Table(
-    "bookings",
-    metadata,
-    Column("id", Integer, primary_key=True),
-    Column("originalId", String(), nullable=False, unique=True),
-    Column("bookingGrade", String()),
-    Column("operatingUnit", String()),
-    Column("officeCity", String()),
-    Column("officePostalCode", String, nullable=False),
-    Column("totalHours", Numeric, nullable=False),
-    Column("startDate", DateTime, nullable=False),
-    Column("endDate", DateTime, nullable=False),
-    Column("isUnassigned", Boolean),
-    Column("clientId", String(), ForeignKey("clients.clientId")),
-    Column("talentId", String(), ForeignKey("talents.talentId")),
-    Column("jobManagerId", String(), ForeignKey("talents.talentId")),
-)
-
-RequiredSkills = Table(
-    "requiredSkills",
-    metadata,
-    Column("id", Integer, primary_key=True),
-    Column("skillName",  String(), ForeignKey("skills.name")),
-    Column("bookingId", Integer, ForeignKey("bookings.id")),
-)
+    def __repr__(self):
+        return f"Talent(talentId={self.talentId!r}, talentName={self.talentNname!r}, talentGrade={self.talentGrade!r})".format(
+            self=self
+        )
 
 
-OptionalSkills = Table(
-    "optionalSkills",
-    metadata,
-    Column("id", Integer, primary_key=True),
-    Column("skillName", String(), ForeignKey("skills.name")),
-    Column("bookingId", Integer, ForeignKey("bookings.id")),
-)
+class Client(Base):
+    __tablename__ = "client"
+
+    clientId = Column(String, primary_key=True)
+    clientName = Column(String)
+    industry = Column(String)
+
+    def __repr__(self):
+        return f"Client(clientId={self.clientId}, clientName={self.clientName}, industry={self.industry})".format(
+            self=self
+        )
+
+
+class Booking(Base):
+    __tablename__ = "booking"
+
+    id = Column(Integer, primary_key=True)
+    originalId = Column(String, nullable=False)
+    bookingGrade = Column(String)
+    operatingUnit = Column(String, nullable=False)
+    officeCity = Column(String)
+    officePostalCode = Column(String)
+    totalHours = Column(Numeric, nullable=False)
+    startDate = Column(DateTime, nullable=False)
+    endDate = Column(DateTime, nullable=False)
+    isUnassigned = Column(Boolean, nullable=False)
+    clientId = Column(String(), ForeignKey("client.clientId"))
+    talentId = Column(String(), ForeignKey("talent.talentId"))
+    jobManagerId = Column(String(), ForeignKey("talent.talentId"))
+    client = relationship("Client")
+
+    jobManager = relationship("Talent", foreign_keys=[jobManagerId])
+    talent =     relationship("Talent", foreign_keys=[talentId])
+
+
+    def __repr__(self):
+        return f"""Bookings(id={self.id}, originalId={self.originalId}, bookingGrade={self.bookingGrade},
+        operatingUnit={self.operatingUnit}, officeCity={self.officeCity}, officePostalCode = {self.officePostalCode},
+        totalHours={self.totalHours}, startDate={self.startDate}, endDate={self.endDate}, isUnassigned={self.isUnassigned},
+        clientId={self.clientId}, talentId={self.talentId}, jobManagerId={self.jobManagerId})""".format(
+            self=self
+        )
+
+
+class RequiredSkill(Base):
+    __tablename__ = "requiredSkills"
+    id = Column(Integer, primary_key=True)
+    bookingId = Column(Integer, ForeignKey("booking.id"))
+    skillName = Column(String, ForeignKey("skill.name"))
+
+    def __repr__(self):
+        return f"bookingId={self.bookingId}, skillName={self.bookingId}, skill={self.skill}.format(self=self)"
+
+
+class OptionalSkill(Base):
+    __tablename__ = "optionalSkills"
+    id = Column(Integer, primary_key=True)
+    bookingId = Column(Integer, ForeignKey("booking.id"))
+    skillName = Column(String, ForeignKey("skill.name"))
+    skill = relationship("Skill")
+
+
+class Skill(Base):
+    __tablename__ = "skill"
+
+    name = Column(String, primary_key=True)
+    category = Column(String)
+
+    #   requiredSkills = relationship(Booking, secondary=RequiredSkill, back_populates="requiredSkills")
+    #   optionalSkills = relationship(Booking, secondary=OptionalSkill, back_populates="optionalSkills")
+
+    def __repr__(self):
+        return f"Skill(name={self.name}, category = {self.category})".format(self=self)

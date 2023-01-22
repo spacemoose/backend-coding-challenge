@@ -2,21 +2,30 @@ from pydantic import BaseModel
 from datetime import datetime
 from typing import Optional
 
-class Talent(BaseModel):
-    talentID: str
-    talentName: str
-    talentGrade: str
+class TalentBase(BaseModel):
+    talentId: Optional[str] = None
+    talentName: Optional[str] = None
+    talentGrade: Optional[str] = None
 
-class Client(BaseModel):
-    client: str
-    clientName: str
-    industry: str
+    class Config:
+        orm_mode=True
 
-class Skill(BaseModel):
+class ClientBase(BaseModel):
+    clientId: str
+    clientName: Optional[str] = None
+    industry: Optional[str] = None
+
+    class Config:
+        orm_mode=True
+
+class ClientCreate(ClientBase):
+    pass
+
+class SkillBase(BaseModel):
     name: str
     category: str
 
-class Booking(BaseModel):
+class BookingBase(BaseModel):
     id: int
     bookingGrade: str
     originalId: str
@@ -27,15 +36,18 @@ class Booking(BaseModel):
     startDate: datetime
     endDate: datetime
     isUnassigned: bool
-    clientId: str
-    talentId: str
-    jobManager: Optional[Talent] = None
-    clientName: Optional[str]
-    industry: Optional[str]
-    talent: Optional[Talent] = None
-    optionalSkills: Optional[list] = None
-    requiredSkills: Optional[list] = None
+    clientId: Optional[str] = None
+ #   talentId: Optional[str] = None
+    jobManagerId: Optional[str] = None
+    client: ClientBase
+    jobManager: Optional[TalentBase] = None
+#    talent: Optional[TalentBase] = None
+    # optionalSkills: Optional[list[SkillBase]] = None
+    # requiredSkills: Optional[list] = None
 
-class BookingCreate(Booking):
+    class Config:
+        orm_mode=True
+
+class BookingCreate(BookingBase):
     pass
 # do i need pydantic models for requiredskills & optionalskills?
